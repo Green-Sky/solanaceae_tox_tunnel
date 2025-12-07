@@ -1,24 +1,24 @@
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
 
 # TEMPLATE: search and rename every mention of:
-# - solanaceae_plugin_template
+# - solanaceae_tox_tunnel
 # - plugin_template
 # - PLUGIN_TEMPLATE
 # - PluginTemplate
 
 # cmake setup begin
-project(solanaceae_plugin_template)
+project(solanaceae_tox_tunnel)
 
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-	set(SOLANACEAE_PLUGIN_TEMPLATE_STANDALONE ON)
+	set(SOLANACEAE_TOX_TUNNEL_STANDALONE ON)
 else()
-	set(SOLANACEAE_PLUGIN_TEMPLATE_STANDALONE OFF)
+	set(SOLANACEAE_TOX_TUNNEL_STANDALONE OFF)
 endif()
-message("II SOLANACEAE_PLUGIN_TEMPLATE_STANDALONE " ${SOLANACEAE_PLUGIN_TEMPLATE_STANDALONE})
+message("II SOLANACEAE_TOX_TUNNEL_STANDALONE " ${SOLANACEAE_TOX_TUNNEL_STANDALONE})
 
-option(SOLANACEAE_PLUGIN_TEMPLATE_BUILD_PLUGINS "Build the plugin_template plugins" ${SOLANACEAE_PLUGIN_TEMPLATE_STANDALONE})
+option(SOLANACEAE_TOX_TUNNEL_BUILD_PLUGINS "Build the tox_tunnel plugins" ${SOLANACEAE_TOX_TUNNEL_STANDALONE})
 
-if (SOLANACEAE_PLUGIN_TEMPLATE_STANDALONE)
+if (SOLANACEAE_TOX_TUNNEL_STANDALONE)
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 	# defaulting to debug mode, if not specified
@@ -38,7 +38,7 @@ endif()
 # external libs
 add_subdirectory(./external EXCLUDE_FROM_ALL) # before increasing warn levels, sad :(
 
-if (SOLANACEAE_PLUGIN_TEMPLATE_STANDALONE)
+if (SOLANACEAE_TOX_TUNNEL_STANDALONE)
 	set(CMAKE_CXX_EXTENSIONS OFF)
 
 	# bump up warning levels appropriately for clang, gcc & msvc
@@ -70,7 +70,7 @@ endif()
 
 add_subdirectory(./src)
 
-if (SOLANACEAE_PLUGIN_TEMPLATE_BUILD_PLUGINS)
+if (SOLANACEAE_TOX_TUNNEL_BUILD_PLUGINS)
 	add_subdirectory(./plugins)
 endif()
 
