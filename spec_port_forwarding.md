@@ -2,60 +2,81 @@
 (maybe more generic?)
 
 This specification describes how 2 or more tox clients can setup and run tcp/udp traffic forwarding.
-A common usecase for this is securely exposing a local webserver to a friend or forwarding game traffic without setting up a vpn or punching holes into a firewall.
+A common usecase for this is securely exposing a local webserver to a friend or forwarding game traffic without setting up a vpn or opening holes into a firewall.
 
-## Simple Setup flow
+## Tunnel Setup flow
 
-A successful setup is performed, if
-- peer `A` sends an `Offer` to `B`,
-- `B` sends an `Accept` back
-- and `A` Acknowlages with an `Ack-Acc`.
+- Alice announces `TunnelInfo` [TunnelID]
+- at some point, Bob sends an `InitTunnel` [TunnelID]
+- Alice replies with `InitAckTunnel` [TunnelID], (or denies ?)
+- Bob replies with `AckTunnel` [TunnelID] and binds a local port and listens
+- the tunnel is now setup and primed
 
-After that, `Data` packets can flow in both directions, until either side sends a `Kill` packet.
+## Pipe Creation flow
+- Bob gets a local connection or packet from new ip:port (STREAM/DATAGRAM)
+- Bob sends `InitPipe` [TunnelID]
+- Alice sends `InitAckPipe` [TunnelID,PipeID] , choosing the PipeID (or denies?)
+- Bob sends `AckPipe` [PipeID], and starts tx data
+- Alice connects/binds (STREAM/DATAGRAM), and starts tx data
 
-There might be an unspecified delay between `Offer` and `Accept`, since the user needs to manually accept, or might just ignore it all together.
-
-For tcp, `Accept` should only be sent after the acceptor has received a local tcp connection.
-Otherwise we would have to implement connect and ack twice in the protocol.
-
-Instead of `Accept`, a `Kill` might also be sent instead to tell the `Offer` is no longer valid (from the offerer) or is not wanted right now (offer receiver).
-
-TODO: server config, preconfiguring local client ports
-
-TODO: other tcp control signals?
+`Data` packets now flow in both directions, until either side sends a `Kill` packet.
 
 ## Packets
 
-### Offer Port Mapping
-- random `msg_id` (namespace is shared between sender and receiver, but not anyone else)
-- type (tcp/udp) (can be both)
-- suggested port (usually the port the offerer used, 0 for none/random)
+### TunnelInfo Announce
+- `TunnelID` (namespace is unique to sender)
+- type (STREAM or DATAGRAM)
 - name (human readable, might be an application name or other to identify the purpose)
-- reliable
+- TODO: suggested port or similar
+- keep alive (defaults to true, pretends and queues packets(if reliable) when the tox connection had a hiccup)
+- TODO: keep alive for how long? default to 5sec? forever?
+- reliable (default is true for stream and flase for datagram, but there are datagram applications that might work better with this)
 
-### Accept Port Mapping
-- the `msg_id` of the offer
-- reliable
+### InitTunnel
+- the `TunnelID` of the offer
 
-### Ack-Acc
-- the `msg_id` of the accept/offer
-- reliable
+### InitAckTunnel
+- the `TunnelID` of the init the announcer is acknowlaging
 
-### Kill Port Mapping
-- the `msg_id` of the accept/offer/running mapping
-- reliable
+### AckTunnel
+- the `TunnelID` of the handshake
 
-### Data (udp/lossy)
-- the `msg_id` of the running mapping
-- lossy
+### KillTunnel
+- the `TunnelID` of the accept/offer/running tunnel
+- can be sent by both peers in all situations
 
-Since its for udp, too large packets can be dropped. (no reassembly support for now)
+### InitPipe
+- `TunnelID`
 
-### Data (tcp/lossless)
-- the `msg_id` of the running mapping
-- reliable
+### InitAckPipe
+- `TunnelID`
+- `PipeID`
 
-Might need reassambly (TODO)
+### AckPipe
+TODO: also tunnel id? is PipeID unique?
+- `PipeID`
+
+### KillPipe
+TODO: also tunnel id? is PipeID unique?
+- `PipeID`
+- can be sent by both peers in all situations
+
+### Data
+- `PipeID`
+- data
+
+### RelData
+(Rel -> Reliable)
+- `PipeID`
+TODO: ack list here? each pkg in tox is expensive. ack bitfield?
+- sequence number
+- data
+
+### RelDataAck
+- `PipeID`
+- [sequence numbers]
+
+sequence numbers are 16bit running counters and each side has their own
 
 ## Contact Specifics
 
@@ -79,4 +100,5 @@ see ToxFriend
 
 - 08.05.2024 Green-Sky: wrote down inital spec (v0.1)
 - 05.12.2025 Green-Sky: draft (v0.2)
+- 12.07.2026 Green-Sky: draft (v0.3)
 
