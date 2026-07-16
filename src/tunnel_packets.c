@@ -78,7 +78,7 @@ size_t tunnel_pkg_info_pack(uint32_t tunnel_id, uint8_t type, const char* name, 
 	return offset;
 }
 
-size_t tunnel_pkg_info_unpack(const uint8_t* buf, size_t buf_len, uint32_t* tunnel_id, uint8_t* type, char* name, uint8_t* name_len, uint32_t* timeout, uint8_t* reliable) {
+size_t tunnel_pkg_info_unpack(const uint8_t* buf, size_t buf_len, uint32_t* tunnel_id, uint8_t* type, const uint8_t** name, uint8_t* name_len, uint32_t* timeout, uint8_t* reliable) {
 	if (!buf || !tunnel_id || !type || !name || !name_len || !timeout || !reliable) return 0;
 
 	size_t offset = 0;
@@ -103,7 +103,7 @@ size_t tunnel_pkg_info_unpack(const uint8_t* buf, size_t buf_len, uint32_t* tunn
 
 	// name (N bytes)
 	if (offset + *name_len > buf_len) return 0;
-	memcpy(name, buf + offset, *name_len);
+	*name = buf + offset;
 	offset += *name_len;
 
 	// timeout (u32)

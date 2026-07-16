@@ -4,7 +4,7 @@
 
 #include "../src/tunnel_packets.h"
 
-static void test_pkg_info_roundtrip(void) {
+static void test_info_roundtrip(void) {
 	uint32_t tunnel_id = 12345;
 	uint8_t type = 0;
 	const char* name = "hello";
@@ -19,25 +19,25 @@ static void test_pkg_info_roundtrip(void) {
 
 	uint32_t decoded_tunnel_id;
 	uint8_t decoded_type;
-	char decoded_name[257]; // +1 for our null
+	const uint8_t* decoded_name = NULL;
 	uint8_t decoded_name_len;
 	uint32_t decoded_timeout;
 	uint8_t decoded_reliable;
-	size_t unpacked_len = tunnel_pkg_info_unpack(buf, packed_len, &decoded_tunnel_id, &decoded_type, decoded_name, &decoded_name_len, &decoded_timeout, &decoded_reliable);
+	size_t unpacked_len = tunnel_pkg_info_unpack(buf, packed_len, &decoded_tunnel_id, &decoded_type, &decoded_name, &decoded_name_len, &decoded_timeout, &decoded_reliable);
 	assert(unpacked_len == packed_len);
 
 	assert(decoded_tunnel_id == tunnel_id);
 	assert(decoded_type == type);
 	assert(decoded_name_len == name_len);
-	decoded_name[decoded_name_len] = '\0';
-	assert(strcmp(decoded_name, name) == 0);
+	assert(decoded_name != NULL);
+	assert(memcmp(decoded_name, name, decoded_name_len) == 0);
 	assert(decoded_timeout == timeout);
 	assert(decoded_reliable == reliable);
 
-	printf("test_pkg_info_roundtrip: PASSED\n");
+	printf("test_info_roundtrip: PASSED\n");
 }
 
-static void test_pkg_info_datagram(void) {
+static void test_info_datagram(void) {
 	uint32_t tunnel_id = 99999;
 	uint8_t type = 1;
 	const char* name = "x";
@@ -51,31 +51,33 @@ static void test_pkg_info_datagram(void) {
 
 	uint32_t decoded_tunnel_id;
 	uint8_t decoded_type;
-	char decoded_name[257];
+	const uint8_t* decoded_name = NULL;
 	uint8_t decoded_name_len;
 	uint32_t decoded_timeout;
 	uint8_t decoded_reliable;
-	size_t unpacked_len = tunnel_pkg_info_unpack(buf, packed_len, &decoded_tunnel_id, &decoded_type, decoded_name, &decoded_name_len, &decoded_timeout, &decoded_reliable);
+	size_t unpacked_len = tunnel_pkg_info_unpack(buf, packed_len, &decoded_tunnel_id, &decoded_type, &decoded_name, &decoded_name_len, &decoded_timeout, &decoded_reliable);
 	assert(unpacked_len == packed_len);
 
 	assert(decoded_tunnel_id == tunnel_id);
 	assert(decoded_type == type);
 	assert(decoded_name_len == name_len);
+	assert(decoded_name != NULL);
+	assert(memcmp(decoded_name, name, decoded_name_len) == 0);
 	assert(decoded_timeout == timeout);
 	assert(decoded_reliable == reliable);
 
-	printf("test_pkg_info_datagram: PASSED\n");
+	printf("test_info_datagram: PASSED\n");
 }
 
-static void test_pkg_info_buffer_too_small(void) {
+static void test_info_buffer_too_small(void) {
 	uint8_t buf[5];
 	size_t packed_len = tunnel_pkg_info_pack(1, 0, "hello", 5, 300, 1, buf, sizeof(buf));
 	assert(packed_len == 0);
 
-	printf("test_pkg_info_buffer_too_small: PASSED\n");
+	printf("test_info_buffer_too_small: PASSED\n");
 }
 
-static void test_pkg_info_unpack_buffer_too_small(void) {
+static void test_info_unpack_buffer_too_small(void) {
 	uint8_t buf[] = { // partial
 		0x39, 0x30, 0x00, 0x00, // tunnel id
 		0x00, // type
@@ -86,42 +88,42 @@ static void test_pkg_info_unpack_buffer_too_small(void) {
 	};
 	uint32_t tunnel_id;
 	uint8_t type;
-	char name[257];
+	const uint8_t* name = NULL;
 	uint8_t name_len;
 	uint32_t timeout;
 	uint8_t reliable;
-	size_t unpacked_len = tunnel_pkg_info_unpack(buf, 5, &tunnel_id, &type, name, &name_len, &timeout, &reliable);
+	size_t unpacked_len = tunnel_pkg_info_unpack(buf, 5, &tunnel_id, &type, &name, &name_len, &timeout, &reliable);
 	assert(unpacked_len == 0);
 
-	printf("test_pkg_info_unpack_buffer_too_small: PASSED\n");
+	printf("test_info_unpack_buffer_too_small: PASSED\n");
 }
 
-static void test_pkg_info_unpack_null_pointer(void) {
+static void test_info_unpack_null_pointer(void) {
 	uint8_t buf[256];
 	uint32_t tunnel_id;
 	uint8_t type;
-	char name[257];
+	const uint8_t* name = NULL;
 	uint8_t name_len;
 	uint32_t timeout;
 	uint8_t reliable;
-	size_t unpacked_len = tunnel_pkg_info_unpack(NULL, 100, &tunnel_id, &type, name, &name_len, &timeout, &reliable);
+	size_t unpacked_len = tunnel_pkg_info_unpack(NULL, 100, &tunnel_id, &type, &name, &name_len, &timeout, &reliable);
 	assert(unpacked_len == 0);
 
 	unpacked_len = tunnel_pkg_info_unpack(buf, 100, NULL, NULL, NULL, NULL, NULL, NULL);
 	assert(unpacked_len == 0);
 
-	printf("test_pkg_info_unpack_null_pointer: PASSED\n");
+	printf("test_info_unpack_null_pointer: PASSED\n");
 }
 
-static void test_pkg_info_pack_null_pointer(void) {
+static void test_info_pack_null_pointer(void) {
 	uint8_t buf[256];
 	size_t packed_len = tunnel_pkg_info_pack(1, 0, NULL, 5, 300, 1, buf, sizeof(buf));
 	assert(packed_len == 0);
 
-	printf("test_pkg_info_pack_null_pointer: PASSED\n");
+	printf("test_info_pack_null_pointer: PASSED\n");
 }
 
-static void test_pkg_info_unpack_empty_name(void) {
+static void test_info_unpack_empty_name(void) {
 	uint8_t buf[] = {
 		0x39, 0x30, 0x00, 0x00, // tunnel id
 		0x00, // type
@@ -131,17 +133,17 @@ static void test_pkg_info_unpack_empty_name(void) {
 
 	uint32_t decoded_tunnel_id;
 	uint8_t decoded_type;
-	char decoded_name[257]; // +1 for our null
+	const uint8_t* decoded_name = NULL;
 	uint8_t decoded_name_len;
 	uint32_t decoded_timeout;
 	uint8_t decoded_reliable;
-	size_t unpacked_len = tunnel_pkg_info_unpack(buf, sizeof(buf), &decoded_tunnel_id, &decoded_type, decoded_name, &decoded_name_len, &decoded_timeout, &decoded_reliable);
+	size_t unpacked_len = tunnel_pkg_info_unpack(buf, sizeof(buf), &decoded_tunnel_id, &decoded_type, &decoded_name, &decoded_name_len, &decoded_timeout, &decoded_reliable);
 	assert(unpacked_len == 0);
 
-	printf("test_pkg_info_unpack_empty_name: PASSED\n");
+	printf("test_info_unpack_empty_name: PASSED\n");
 }
 
-static void test_pkg_info_pack_empty_name(void) {
+static void test_info_pack_empty_name(void) {
 	uint32_t tunnel_id = 12345;
 	uint8_t type = 0;
 	const char* name = "";
@@ -153,7 +155,31 @@ static void test_pkg_info_pack_empty_name(void) {
 	size_t packed_len = tunnel_pkg_info_pack(tunnel_id, type, name, name_len, timeout, reliable, buf, sizeof(buf));
 	assert(packed_len == 0);
 
-	printf("test_pkg_info_pack_empty_name: PASSED\n");
+	printf("test_info_pack_empty_name: PASSED\n");
+}
+
+static void test_info_name_max_length(void) {
+	char name[257];
+	memset(name, 'A', 255);
+	name[256] = '\0';
+
+	uint8_t buf[256 + 100];
+	size_t packed_len = tunnel_pkg_info_pack(1, 0, name, 255, 0, 0, buf, sizeof(buf));
+	assert(packed_len == 4 + 1 + 1 + 255 + 4 + 1);
+
+	uint32_t unpacked_tunnel_id;
+	uint8_t unpacked_type;
+	const uint8_t* unpacked_name = NULL;
+	uint8_t unpacked_name_len;
+	uint32_t unpacked_timeout;
+	uint8_t unpacked_reliable;
+	size_t unpacked_len = tunnel_pkg_info_unpack(buf, packed_len, &unpacked_tunnel_id, &unpacked_type, &unpacked_name, &unpacked_name_len, &unpacked_timeout, &unpacked_reliable);
+	assert(unpacked_len == packed_len);
+	assert(unpacked_name_len == 255);
+	assert(unpacked_name != NULL);
+	assert(memcmp(unpacked_name, name, 255) == 0);
+
+	printf("test_info_name_max_length: PASSED\n");
 }
 
 // --- Tunnel Handshake Tests ---
@@ -506,30 +532,6 @@ static void test_seq_boundary(void) {
 	printf("test_seq_boundary: PASSED\n");
 }
 
-static void test_name_max_length(void) {
-	char name[257];
-	memset(name, 'A', 255);
-	name[256] = '\0';
-
-	uint8_t buf[256 + 100];
-	size_t packed_len = tunnel_pkg_info_pack(1, 0, name, 255, 0, 0, buf, sizeof(buf));
-	assert(packed_len == 4 + 1 + 1 + 255 + 4 + 1);
-
-	uint32_t unpacked_tunnel_id;
-	uint8_t unpacked_type;
-	char unpacked_name[257];
-	uint8_t unpacked_name_len;
-	uint32_t unpacked_timeout;
-	uint8_t unpacked_reliable;
-	size_t unpacked_len = tunnel_pkg_info_unpack(buf, packed_len, &unpacked_tunnel_id, &unpacked_type, unpacked_name, &unpacked_name_len, &unpacked_timeout, &unpacked_reliable);
-	assert(unpacked_len == packed_len);
-	assert(unpacked_name_len == 255);
-	assert(strlen(unpacked_name) == 255);
-	assert(memcmp(unpacked_name, name, 255) == 0);
-
-	printf("test_name_max_length: PASSED\n");
-}
-
 static void test_reldata_ack_multiple_seqs(void) {
 	uint16_t seqs[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 	uint8_t buf[256];
@@ -635,14 +637,15 @@ static void test_seq_zero(void) {
 }
 
 int main(void) {
-	test_pkg_info_roundtrip();
-	test_pkg_info_datagram();
-	test_pkg_info_buffer_too_small();
-	test_pkg_info_unpack_buffer_too_small();
-	test_pkg_info_unpack_null_pointer();
-	test_pkg_info_pack_null_pointer();
-	test_pkg_info_unpack_empty_name();
-	test_pkg_info_pack_empty_name();
+	test_info_roundtrip();
+	test_info_datagram();
+	test_info_buffer_too_small();
+	test_info_unpack_buffer_too_small();
+	test_info_unpack_null_pointer();
+	test_info_pack_null_pointer();
+	test_info_unpack_empty_name();
+	test_info_pack_empty_name();
+	test_info_name_max_length();
 	test_tunnel_init_roundtrip();
 	test_tunnel_init_ack_roundtrip();
 	test_tunnel_ack_roundtrip();
@@ -664,7 +667,6 @@ int main(void) {
 	test_tunnel_id_boundary();
 	test_pipe_id_boundary();
 	test_seq_boundary();
-	test_name_max_length();
 	test_reldata_ack_multiple_seqs();
 	test_data_large_payload();
 	test_exact_buffer_size();

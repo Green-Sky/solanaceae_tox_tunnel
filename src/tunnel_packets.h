@@ -10,7 +10,8 @@ size_t tunnel_pkg_info_pack(uint32_t tunnel_id, uint8_t type, const char* name, 
 // [TunnelID u32] [type u8] [name_len u8] [name N bytes] [timeout u32] [reliable u8]
 // returns bytes consumed from buf on success, 0 on error
 // name_len is without null byte
-size_t tunnel_pkg_info_unpack(const uint8_t* buf, size_t buf_len, uint32_t* tunnel_id, uint8_t* type, char* name, uint8_t* name_len, uint32_t* timeout, uint8_t* reliable);
+// name is the returned pointer into buf
+size_t tunnel_pkg_info_unpack(const uint8_t* buf, size_t buf_len, uint32_t* tunnel_id, uint8_t* type, const uint8_t** name, uint8_t* name_len, uint32_t* timeout, uint8_t* reliable);
 
 // [TunnelID u32]
 // returns bytes written to buf on success, 0 on error
@@ -86,6 +87,7 @@ size_t tunnel_pkg_data_pack(const uint8_t* data, size_t data_len, uint16_t pipe_
 
 // [PipeID u16] [data ...]
 // returns bytes consumed from buf on success, 0 on error
+// data is the returned pointer into buf
 size_t tunnel_pkg_data_unpack(const uint8_t* buf, size_t buf_len, uint16_t* pipe_id, const uint8_t** data, size_t* data_len);
 
 // [PipeID u16] [seq u16] [data ...]
@@ -94,6 +96,7 @@ size_t tunnel_pkg_reldata_pack(const uint8_t* data, size_t data_len, uint16_t pi
 
 // [PipeID u16] [seq u16] [data ...]
 // returns bytes consumed from buf on success, 0 on error
+// data is the returned pointer into buf
 size_t tunnel_pkg_reldata_unpack(const uint8_t* buf, size_t buf_len, uint16_t* pipe_id, uint16_t* seq, const uint8_t** data, size_t* data_len);
 
 // [PipeID u16] [seq0 u16] [seq1 u16] ...
@@ -102,4 +105,5 @@ size_t tunnel_pkg_reldata_ack_pack(const uint16_t* seqs, size_t seq_count, uint1
 
 // [PipeID u16] [seq0 u16] [seq1 u16] ...
 // returns bytes consumed from buf on success, 0 on error
+// seqs needs to be an array with enough space
 size_t tunnel_pkg_reldata_ack_unpack(const uint8_t* buf, size_t buf_len, uint16_t* pipe_id, uint16_t* seqs, size_t seqs_buf_len, size_t* seq_count);
