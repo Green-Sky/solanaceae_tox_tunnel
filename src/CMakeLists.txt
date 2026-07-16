@@ -9,6 +9,18 @@ target_compile_features(tunnel_packets PUBLIC c_std_11)
 
 ########################################
 
+add_library(pipe
+	./reliability.hpp
+	./reliability.cpp
+)
+target_include_directories(pipe PUBLIC .)
+target_compile_features(pipe PUBLIC cxx_std_17)
+target_link_libraries(pipe PUBLIC
+	solanaceae_util
+)
+
+########################################
+
 add_library(plugin_template
 	#./socket_udp.hpp
 
