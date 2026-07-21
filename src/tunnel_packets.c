@@ -275,9 +275,7 @@ size_t tunnel_pkg_data_pack(const uint8_t* data, size_t data_len, uint16_t pipe_
 	size_t header_len = 2;
 	if (buf_len < header_len + data_len) return 0;
 	write_u16(buf, pipe_id);
-	if (data_len > 0) {
-		memcpy(buf + header_len, data, data_len);
-	}
+	memcpy(buf + header_len, data, data_len);
 	return header_len + data_len;
 }
 
@@ -294,15 +292,13 @@ size_t tunnel_pkg_data_unpack(const uint8_t* buf, size_t buf_len, uint16_t* pipe
 // --- RelData (reliable) ---
 
 size_t tunnel_pkg_reldata_pack(const uint8_t* data, size_t data_len, uint16_t pipe_id, uint16_t seq, uint8_t* buf, size_t buf_len) {
-	if (!buf || !data) return 0;
+	if (!buf || !data || data_len == 0) return 0;
 
 	size_t header_len = 4;
 	if (buf_len < header_len + data_len) return 0;
 	write_u16(buf, pipe_id);
 	write_u16(buf + 2, seq);
-	if (data_len > 0) {
-		memcpy(buf + header_len, data, data_len);
-	}
+	memcpy(buf + header_len, data, data_len);
 	return header_len + data_len;
 }
 

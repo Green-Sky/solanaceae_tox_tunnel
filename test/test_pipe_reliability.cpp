@@ -17,12 +17,12 @@ static void test_simple_roundtrip(void) {
 	assert(rel_alice.next_seq == 1);
 	assert(rel_alice.unacked_data.size() == 1);
 	assert(rel_alice.unacked_data.count(pkg1_seq) == 1);
-	assert(rel_alice.unacked_data.at(pkg1_seq) == pkg1_data);
+	assert(rel_alice.unacked_data.at(pkg1_seq).data == pkg1_data);
 
 	Reliability rel_bob;
 	rel_bob.receiveData(pkg1_seq, ByteSpan{pkg1_data});
 	assert(rel_bob.acks.size() == 1);
-	assert(rel_bob.acks.front() == pkg1_seq);
+	assert(rel_bob.acks.front().seq == pkg1_seq);
 	assert(rel_bob.incomming_data.size() == 1);
 
 	rel_alice.receiveAck(pkg1_seq);
@@ -114,7 +114,7 @@ static void test_complex_roundtrip_loop(void) {
 					break;
 				}
 
-				rel_alice.receiveAck(*it);
+				rel_alice.receiveAck(it->seq);
 				it = rel_bob.acks.erase(it);
 			}
 		}
@@ -125,7 +125,7 @@ static void test_complex_roundtrip_loop(void) {
 					break;
 				}
 
-				rel_bob.receiveAck(*it);
+				rel_bob.receiveAck(it->seq);
 				it = rel_alice.acks.erase(it);
 			}
 		}

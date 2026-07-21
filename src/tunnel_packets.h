@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -107,3 +111,7 @@ size_t tunnel_pkg_reldata_ack_pack(const uint16_t* seqs, size_t seq_count, uint1
 // returns bytes consumed from buf on success, 0 on error
 // seqs needs to be an array with enough space
 size_t tunnel_pkg_reldata_ack_unpack(const uint8_t* buf, size_t buf_len, uint16_t* pipe_id, uint16_t* seqs, size_t seqs_buf_len, size_t* seq_count);
+
+#ifdef __cplusplus
+} // extern c
+#endif
