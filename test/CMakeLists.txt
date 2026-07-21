@@ -28,3 +28,22 @@ add_test(
 	NAME pipe_reliability_test
 	COMMAND test_pipe_reliability
 )
+
+########################################
+
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+	add_executable(test_pipe_proto_int
+		./test_pipe_proto_int.cpp
+	)
+	target_link_libraries(test_pipe_proto_int PRIVATE
+		tunnel_packets
+		pipe
+		EnTT::EnTT
+	)
+	target_compile_features(test_pipe_proto_int PRIVATE cxx_std_17)
+
+	add_test(
+		NAME pipe_proto_int_test
+		COMMAND test_pipe_proto_int
+	)
+endif()
